@@ -1,5 +1,6 @@
 import os
 import streamlit as st
+import sys
 from langchain_community.retrievers import TavilySearchAPIRetriever
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnablePassthrough
@@ -15,6 +16,11 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
+
+
+# 현재 파일(ai_chatbot.py)의 위치를 기반으로 lawChatBot 경로 추가
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # lawChatBot 디렉토리 경로
+sys.path.append(BASE_DIR)  # Python import 경로에 추가
 
 # agent 관리 파일
 from agent import Agent
@@ -48,7 +54,7 @@ os.environ['USER_AGENT']='MyCustomAgent'
 @st.cache_resource
 def load_chroma_db():
     return Chroma(
-        persist_directory="./chroma_Web",
+        persist_directory=os.path.join(os.path.dirname(__file__), "chroma_Web"),
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
     )
 
@@ -62,8 +68,15 @@ llm = ChatOpenAI(
 )
 
 # 프롬프트 로드 함수 추가
+# def load_prompt(filename):
+#     base_path = os.path.dirname(__file__)  # 현재 파일 기준 디렉토리
+#     prompt_path = os.path.join(base_path, "prompts", filename)  # 절대 경로로 설정
+#     with open(prompt_path, "r", encoding="utf-8") as file:
+#         return file.read()
 def load_prompt(filename):
-    with open(f"prompts/{filename}", "r", encoding="utf-8") as file:
+    # lawChatBot 내 prompts 폴더 경로 설정
+    prompt_path = os.path.join(BASE_DIR, "prompts", filename)  # 절대 경로 사용
+    with open(prompt_path, "r", encoding="utf-8") as file:
         return file.read()
 
 
